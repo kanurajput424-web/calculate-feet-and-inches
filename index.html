@@ -5,21 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Feet & Inches Calculator</title>
 <style>
-  body { margin:0; font-family:sans-serif; background:#121212; color:white; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; }
-  .calculator { background:#1e1e1e; padding:20px; border-radius:20px; width:350px; margin-top:40px; box-shadow:0 0 20px rgba(0,0,0,0.6);}
-  .display { background:#222; border-radius:10px; padding:15px; font-size:24px; text-align:right; margin-bottom:15px; overflow-x:auto;}
-  .result { font-size:20px; color:#00ffcc; margin-top:5px; min-height:24px;}
-  .keyboard { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-  button { padding:18px; font-size:20px; border:none; border-radius:10px; background:#333; color:white; cursor:pointer; transition:0.1s; }
-  button:hover { background:#555; }
-  button.equal { background:#008cff; }
-  button.equal:hover { background:#0077e6; }
-  button.clear { background:#ff4d4d; }
-  .tabs { display:flex; margin-bottom:10px; }
-  .tab { flex:1; padding:10px; cursor:pointer; text-align:center; background:#333; border-radius:10px 10px 0 0; }
-  .tab.active { background:#008cff; }
-  .history { margin-top:15px; max-height:120px; overflow-y:auto; background:#222; padding:10px; border-radius:10px; font-size:14px; }
-  .history-item { padding:5px 0; border-bottom:1px solid #444; }
+body { margin:0; font-family:sans-serif; background:#121212; color:white; display:flex; justify-content:center; align-items:flex-start; min-height:100vh;}
+.calculator { background:#1e1e1e; padding:20px; border-radius:20px; width:360px; margin-top:40px; box-shadow:0 0 20px rgba(0,0,0,0.6);}
+.display { background:#222; border-radius:10px; padding:15px; font-size:24px; text-align:right; margin-bottom:15px; overflow-x:auto;}
+.result { font-size:20px; color:#00ffcc; margin-top:5px; min-height:24px;}
+.keyboard { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+button { padding:18px; font-size:20px; border:none; border-radius:10px; background:#333; color:white; cursor:pointer; transition:0.1s; }
+button:hover { background:#555; }
+button.equal { background:#008cff; font-size:26px; grid-column: span 2; }
+button.clear { background:#ff4d4d; }
+button.backspace { background:#ff9900; }
+button.plusminus { font-size:26px; }
+.tabs { display:flex; margin-bottom:10px; }
+.tab { flex:1; padding:10px; cursor:pointer; text-align:center; background:#333; border-radius:10px 10px 0 0; }
+.tab.active { background:#008cff; }
+.history { margin-top:15px; max-height:120px; overflow-y:auto; background:#222; padding:10px; border-radius:10px; font-size:14px; }
+.history-item { padding:5px 0; border-bottom:1px solid #444; }
 </style>
 </head>
 <body>
@@ -38,12 +39,12 @@
       <button onclick="addVal('7')">7</button>
       <button onclick="addVal('8')">8</button>
       <button onclick="addVal('9')">9</button>
-      <button onclick="addVal('+')">+</button>
+      <button class="plusminus" onclick="addVal('+')">+</button>
 
       <button onclick="addVal('4')">4</button>
       <button onclick="addVal('5')">5</button>
       <button onclick="addVal('6')">6</button>
-      <button onclick="addVal('-')">-</button>
+      <button class="plusminus" onclick="addVal('-')">-</button>
 
       <button onclick="addVal('1')">1</button>
       <button onclick="addVal('2')">2</button>
@@ -52,10 +53,11 @@
 
       <button onclick="addVal('0')">0</button>
       <button onclick="addVal('.')">.</button>
-      <button class="clear" onclick="clearInput()">C</button>
+      <button class="backspace" onclick="backspace()">⌫</button>
       <button onclick="addVal('/')">÷</button>
 
       <button class="equal" onclick="calculate()">=</button>
+      <button class="clear" onclick="clearInput()">C</button>
     </div>
   </div>
 
@@ -82,6 +84,10 @@ function switchTab(tab){
 // Expression calculator
 function addVal(v){ document.getElementById("expression").innerText += v; }
 function clearInput(){ document.getElementById("expression").innerText=""; document.getElementById("result").innerText=""; }
+function backspace(){
+  let exp=document.getElementById("expression").innerText;
+  document.getElementById("expression").innerText=exp.slice(0,-1);
+}
 
 function toInches(val){
   val=val.trim(); if(!val) return 0;
@@ -96,16 +102,16 @@ function toFeetInches(total){
   return sign+feet+"."+ (inches<10?"0"+inches:inches);
 }
 
-let historyItems = [];
+let historyItems=[];
 function addHistory(txt){
   historyItems.unshift(txt);
   if(historyItems.length>5) historyItems.pop();
-  document.getElementById("history").innerHTML = historyItems.map(h=>'<div class="history-item">'+h+'</div>').join('');
+  document.getElementById("history").innerHTML=historyItems.map(h=>'<div class="history-item">'+h+'</div>').join('');
 }
 
 function calculate(){
-  let expr = document.getElementById("expression").innerText.replace(/×/g,'*').replace(/÷/g,'/');
-  let tokens = expr.match(/([0-9.]+|[-+*/])/g);
+  let expr=document.getElementById("expression").innerText.replace(/×/g,'*').replace(/÷/g,'/');
+  let tokens=expr.match(/([0-9.]+|[-+*/])/g);
   if(!tokens){ document.getElementById("result").innerText="Invalid"; return; }
   let converted=""; for(let t of tokens){ converted += "+-*/".includes(t)?t:toInches(t); }
   try{
@@ -127,13 +133,10 @@ function commaAdd(){
 
 // Keyboard typing support
 document.addEventListener('keydown', function(e){
-  let allowed = '0123456789+-*/.'.split('');
+  let allowed='0123456789+-*/.'.split('');
   if(allowed.includes(e.key)) addVal(e.key);
   else if(e.key==='Enter') calculate();
-  else if(e.key==='Backspace'){
-    let exp = document.getElementById("expression").innerText;
-    document.getElementById("expression").innerText = exp.slice(0,-1);
-  }
+  else if(e.key==='Backspace') backspace();
 });
 </script>
 
