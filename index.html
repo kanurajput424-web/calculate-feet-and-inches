@@ -5,22 +5,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Feet & Inches Calculator</title>
 <style>
-body { margin:0; font-family:sans-serif; background:#121212; color:white; display:flex; justify-content:center; align-items:flex-start; min-height:100vh;}
-.calculator { background:#1e1e1e; padding:20px; border-radius:20px; width:360px; margin-top:40px; box-shadow:0 0 20px rgba(0,0,0,0.6);}
-.display { background:#222; border-radius:10px; padding:15px; font-size:24px; text-align:right; margin-bottom:15px; overflow-x:auto;}
-.result { font-size:20px; color:#00ffcc; margin-top:5px; min-height:24px;}
-.keyboard { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-button { padding:18px; font-size:20px; border:none; border-radius:10px; background:#333; color:white; cursor:pointer; transition:0.1s; }
-button:hover { background:#555; }
-button.equal { background:#008cff; font-size:26px; grid-column: span 2; }
-button.clear { background:#ff4d4d; }
-button.backspace { background:#ff9900; }
-button.plusminus { font-size:26px; }
-.tabs { display:flex; margin-bottom:10px; }
-.tab { flex:1; padding:10px; cursor:pointer; text-align:center; background:#333; border-radius:10px 10px 0 0; }
-.tab.active { background:#008cff; }
-.history { margin-top:15px; max-height:120px; overflow-y:auto; background:#222; padding:10px; border-radius:10px; font-size:14px; }
-.history-item { padding:5px 0; border-bottom:1px solid #444; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #121212;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.calculator {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 20px;
+  width: 360px;
+  margin-top: 40px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.display {
+  background: #222;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 24px;
+  text-align: right;
+  margin-bottom: 15px;
+  overflow-x: auto;       /* ✅ scrolls horizontally */
+  white-space: nowrap;    /* ✅ prevents line breaks */
+}
+
+.result {
+  font-size: 20px;
+  color: #00ffcc;
+  margin-top: 5px;
+  min-height: 24px;
+}
+
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+button {
+  padding: 18px;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  background: #333;
+  color: white;
+  cursor: pointer;
+  transition: 0.1s;
+}
+
+button:hover { background: #555; }
+button.equal {
+  background: #008cff;
+  font-size: 26px;
+  grid-column: span 2;
+}
+button.clear { background: #ff4d4d; }
+button.backspace { background: #ff9900; }
+button.plusminus { font-size: 26px; }
+
+.tabs {
+  display: flex;
+  margin-bottom: 10px;
+}
+.tab {
+  flex: 1;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  background: #333;
+  border-radius: 10px 10px 0 0;
+}
+.tab.active { background: #008cff; }
+
+.history {
+  margin-top: 15px;
+  max-height: 120px;
+  overflow-y: auto;
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.history-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #444;
+}
 </style>
 </head>
 <body>
@@ -35,6 +111,7 @@ button.plusminus { font-size:26px; }
   <div id="exprTab">
     <div class="display" id="expression"></div>
     <div class="result" id="result"></div>
+
     <div class="keyboard">
       <button onclick="addVal('7')">7</button>
       <button onclick="addVal('8')">8</button>
@@ -63,7 +140,8 @@ button.plusminus { font-size:26px; }
 
   <!-- Comma Tab -->
   <div id="commaTab" style="display:none;">
-    <div class="display" contenteditable="true" id="commaInput" style="text-align:left; height:50px;">Enter values e.g. 5.11,3.08,2.07</div>
+    <div class="display" contenteditable="true" id="commaInput"
+         style="text-align:left; height:50px;">Enter values e.g. 5.11,3.08,2.07</div>
     <button class="equal" style="margin-top:10px; width:100%;" onclick="commaAdd()">Add</button>
     <div class="result" id="commaResult"></div>
   </div>
@@ -73,65 +151,93 @@ button.plusminus { font-size:26px; }
 </div>
 
 <script>
-// Tabs
+// ---------- Tab Switch ----------
 function switchTab(tab){
   document.getElementById('exprTab').style.display = tab==='expr'?'block':'none';
   document.getElementById('commaTab').style.display = tab==='comma'?'block':'none';
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab')[tab==='expr'?0:1].classList.add('active');
 }
 
-// Expression calculator
+// ---------- Display Controls ----------
 function addVal(v){ document.getElementById("expression").innerText += v; }
-function clearInput(){ document.getElementById("expression").innerText=""; document.getElementById("result").innerText=""; }
+function clearInput(){
+  document.getElementById("expression").innerText="";
+  document.getElementById("result").innerText="";
+}
 function backspace(){
   let exp=document.getElementById("expression").innerText;
   document.getElementById("expression").innerText=exp.slice(0,-1);
 }
 
+// ---------- Conversion Helpers ----------
 function toInches(val){
   val=val.trim(); if(!val) return 0;
-  let sign=val.startsWith('-')?-1:1; val=val.replace(/[+-]/,''); let feet=0,inches=0;
-  if(val.includes('.'))[feet,inches]=val.split('.').map(Number);
+  let sign=val.startsWith('-')?-1:1; val=val.replace(/[+-]/,'');
+  let feet=0,inches=0;
+  if(val.includes('.')) [feet,inches]=val.split('.').map(Number);
   else feet=Number(val);
   return sign*(feet*12+inches);
 }
+
 function toFeetInches(total){
   let sign=total<0?"-":""; total=Math.abs(Math.round(total));
   let feet=Math.floor(total/12), inches=total%12;
-  return sign+feet+"."+ (inches<10?"0"+inches:inches);
+  return sign+feet+"."+(inches<10?"0"+inches:inches);
 }
 
+// ---------- History ----------
 let historyItems=[];
 function addHistory(txt){
   historyItems.unshift(txt);
-  if(historyItems.length>5) historyItems.pop();
-  document.getElementById("history").innerHTML=historyItems.map(h=>'<div class="history-item">'+h+'</div>').join('');
+  if(historyItems.length>10) historyItems.pop();
+  document.getElementById("history").innerHTML=historyItems
+    .map(h=>'<div class="history-item">'+h+'</div>').join('');
 }
 
+// ---------- Expression Calculation ----------
 function calculate(){
-  let expr=document.getElementById("expression").innerText.replace(/×/g,'*').replace(/÷/g,'/');
-  let tokens=expr.match(/([0-9.]+|[-+*/])/g);
+  let expr=document.getElementById("expression").innerText
+              .replace(/×/g,'*').replace(/÷/g,'/');
+
+  // Break down long expressions safely
+  let tokens = expr.match(/(\d+(\.\d+)?|[-+*/])/g);
   if(!tokens){ document.getElementById("result").innerText="Invalid"; return; }
-  let converted=""; for(let t of tokens){ converted += "+-*/".includes(t)?t:toInches(t); }
+
+  console.log("Tokens count:", tokens.length);
+  if(tokens.length > 2000){
+    alert("⚠️ You entered over 2000 values! This might slow down your browser.");
+  }
+
+  // Convert feet.inches to inches
+  let converted = "";
+  for(let t of tokens){
+    if("+-*/".includes(t)) converted += t;
+    else converted += toInches(t);
+  }
+
   try{
-    let total=eval(converted);
-    let res=toFeetInches(total);
-    document.getElementById("result").innerText="Result: "+res;
-    addHistory(expr+" = "+res);
-  }catch(e){ document.getElementById("result").innerText="Invalid Expression"; }
+    let total = eval(converted);
+    let res = toFeetInches(total);
+    document.getElementById("result").innerText = "Result: " + res;
+    addHistory(expr + " = " + res);
+  }catch(e){
+    document.getElementById("result").innerText = "Invalid Expression";
+  }
 }
 
-// Comma addition
+// ---------- Comma Addition ----------
 function commaAdd(){
-  let input=document.getElementById("commaInput").innerText.split(',').map(s=>s.trim()).filter(s=>s);
-  let total=0; for(let p of input) total+=toInches(p);
+  let input=document.getElementById("commaInput").innerText
+                .split(',').map(s=>s.trim()).filter(s=>s);
+  let total=0;
+  for(let p of input) total+=toInches(p);
   let res=toFeetInches(total);
   document.getElementById("commaResult").innerText="Sum: "+res;
   addHistory("Sum("+input.join(",")+") = "+res);
 }
 
-// Keyboard typing support
+// ---------- Keyboard Typing ----------
 document.addEventListener('keydown', function(e){
   let allowed='0123456789+-*/.'.split('');
   if(allowed.includes(e.key)) addVal(e.key);
